@@ -1,5 +1,4 @@
 // app/recipes/[id]/page.tsx
-// @ts-nocheck
 import { prisma } from "@/lib/db";
 import Image from "next/image";
 import RecipeForm from "@/components/RecipeForm";
@@ -10,7 +9,7 @@ type PageProps = {
   params: { id: string }; 
 };
 
-export default async function Page({ params }: PageProps) {
+export default async function Page({ params }: { params: { id: string } }) {
   const r = await prisma.recipe.findUnique({ where: { id: params.id } });
   if (!r) return notFound();
 
