@@ -19,9 +19,10 @@ export const authOptions: NextAuthOptions = {
       async authorize(creds) {
         if (!creds?.email || !creds?.password) return null;
 
-        const user = await prisma.user.findUnique({
+        const user = await prisma.user.findUnique({          
           where: { email: creds.email },
         });
+        
         if (!user || !user.passwordHash) return null;
 
         const ok = await compare(creds.password, user.passwordHash);
