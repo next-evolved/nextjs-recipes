@@ -43,7 +43,7 @@ export async function createRecipe(fd: FormData) {
   }
 
   // only runs if try succeeded
-  redirect(`/recipes/${createdId!}`);
+  redirect(`/recipes`);
 }
 
 
@@ -70,7 +70,7 @@ export async function updateRecipe(id: string, fd: FormData) {
         console.error(err);
         return { error: "Failed to update recipe" };
   }
-  redirect(`/recipes/${id}`);
+  redirect(`/recipes`);
 }
 
 export async function deleteRecipe(id: string) {
