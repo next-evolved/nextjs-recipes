@@ -51,43 +51,57 @@ export async function updateRecipe(id: string, fd: FormData) {
   try {
     const userId = await requireUserId();
     const existing = await prisma.recipe.findUnique({ where: { id } });
-    if (!existing || existing.userId !== userId) throw new Error("Forbidden");
+    if (!existing) return { error: "Recipe not found." };
+    if (existing.userId !== userId) {
+      return { error: "You are not authorized to change this recipe." };
+    }
 
-    const input = RecipeSchema.parse({
+    const parsed = RecipeSchema.safeParse({
       name: fd.get("name")?.toString(),
       imageUrl: fd.get("imageUrl")?.toString(),
       ingredients: fd.get("ingredients")?.toString() ?? "",
       steps: fd.get("steps")?.toString() ?? "",
     });
+    if (!parsed.success) {
+      const msg = parsed.error.issues[0]?.message ?? "Invalid form data.";
+      return { error: msg };
+    }
 
-    await prisma.recipe.update({ where: { id }, data: input });
-
-    // detail + list might both be visible elsewhere
+    await prisma.recipe.update({ where: { id }, data: parsed.data });
     revalidatePath(`/recipes/${id}`);
     revalidatePath("/recipes");
-    
-  } catch (err) {
-        console.error(err);
-        return { error: "Failed to update recipe" };
+
+    // ✅ success path
+    return { success: "Recipe updated successfully!" };
+  } catch (err: any) {
+    console.error(err);
+    return { error: "Failed to update recipe." };
   }
-  redirect(`/recipes`);
 }
+
+
+
 
 export async function deleteRecipe(id: string) {
   try {
     const userId = await requireUserId();
     const existing = await prisma.recipe.findUnique({ where: { id } });
-    if (!existing || existing.userId !== userId) throw new Error("Forbidden");
+
+    if (!existing) {
+      return { error: "Recipe not found." };
+    }
+    if (existing.userId !== userId) {
+      return { error: "You are not authorized to delete this recipe." };
+    }
 
     await prisma.recipe.delete({ where: { id } });
 
-    // list definitely changed; detail page is gone (safe to revalidate anyway)
     revalidatePath("/recipes");
     revalidatePath(`/recipes/${id}`);
-
-  } catch (err) {
+    
+  } catch (err: any) {
     console.error(err);
-    return { error: "Failed to delete recipe" };
+    return { error: "Failed to delete recipe." };
   }
   redirect("/recipes");
 }

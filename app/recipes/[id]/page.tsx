@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/db";
 import RecipeForm from "@/components/RecipeForm";
 import { updateRecipe, deleteRecipe } from "../actions";
+import { DeleteButton } from "@/components/DeleteButton";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 
@@ -21,7 +22,7 @@ export default async function Page({ params }: { params: { id: string } }) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">{recipe.name}</h1>
-        <form action={remove}><button className="rounded border px-3 py-2">Delete</button></form>
+        <DeleteButton action={remove} />
       </div>
 
       <Image
